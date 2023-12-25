@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Calculator</h1>
+
+    <div class="numberDisplay">
+        1337
+    </div>
+
+    <div id="calculator">
+        <div class="div" id="Row">
+            <button id="btn1" class="number-btn">1</button>
+            <button id="btn2" class="number-btn">2</button>
+            <button id="btn3" class="number-btn">3</button>
+            <button id="multiply" class="operation-btn">*</button>
+        </div>
+            <button id="btn4" class="number-btn">4</button>
+            <button id="btn5" class="number-btn">5</button>
+            <button id="btn6" class="number-btn">6</button>
+            <button id="divide" class="operation-btn">/</button>
+        <div class="div" id="Row">
+            <button id="btn7" class="number-btn">7</button>
+            <button id="btn8" class="number-btn">8</button>
+            <button id="btn9" class="number-btn">9</button>
+            <button id="subtract" class="operation-btn">-</button>
+        </div>
+        <div class="div" id="Row">
+            <button id="dot" class="number-btn">.</button>
+            <button id="btn0" class="number-btn">0</button>
+            <button id="equals" class="equals-btn">=</button>
+            <button id="add" class="operation-btn">+</button>
+        </div>
+        <button id="clear" class="clear-btn">C</button>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+
+:root{
+    font-family: 'Roboto', sans-serif;
+    font-size: 50px;
+    background-color: #1a1a1a;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+button{
+    width: 20%;
+    height: 125px;
+    margin: 8px 3px 8px 5px;
+    background-color: transparent;
+    border: white solid 1px;
+    color: white;
+    font-size: 50px;
+    text-align: center;
+}
+
+.numberDisplay{
+    font-family: 'Orbitron';
+    border: white solid 3px;
+    width: 93%;
+    height: 60px;
+    font-size: 80%;
+    text-align: left;
+}
+
+.clear-btn{
+    width: 93%;
+    color: hotpink;
+    border-color: hotpink;
+}
+</style>
+
+<script>
+    class Calculator {
+    constructor() {
+        this.display = document.querySelector('.numberDisplay');
+        this.currentNumber = '';
+        this.operator = null;
+        this.firstOperand = null;
+        this.waitingForSecondOperand = false;
+    }
+
+    inputDigit(digit) {
+        if (this.waitingForSecondOperand) {
+            this.currentNumber = digit;
+            this.waitingForSecondOperand = false;
+        } else {
+            this.currentNumber = this.currentNumber === '' ? digit : this.currentNumber + digit;
+        }
+        this.updateDisplay();
+    }
+
+    inputDecimal() {
+        if (!this.currentNumber.includes('.')) {
+            this.currentNumber += '.';
+        }
+        this.updateDisplay();
+    }
+
+    clear() {
+        this.currentNumber = '';
+        this.firstOperand = null;
+        this.operator = null;
+        this.waitingForSecondOperand = false;
+        this.updateDisplay();
+    }
+
+    updateDisplay() {
+        this.display.textContent = this.currentNumber;
+    }
+
+    inputOperator(nextOperator) {
+        if (this.operator && !this.waitingForSecondOperand) {
+            this.calculate();
+        }
+        this.firstOperand = parseFloat(this.currentNumber);
+        this.operator = nextOperator;
+        this.waitingForSecondOperand = true;
+    }
+
+    calculate() {
+        if (this.operator && this.firstOperand !== null) {
+            const secondOperand = parseFloat(this.currentNumber);
+            switch (this.operator) {
+                case '+':
+                    this.currentNumber = this.firstOperand + secondOperand;
+                    break;
+                case '-':
+                    this.currentNumber = this.firstOperand - secondOperand;
+                    break;
+                case '*':
+                    this.currentNumber = this.firstOperand * secondOperand;
+                    break;
+                case '/':
+                    if (secondOperand === 0) {
+                        alert("Cannot divide by zero");
+                        return;
+                    }
+                    this.currentNumber = this.firstOperand / secondOperand;
+                    break;
+            }
+            this.firstOperand = this.currentNumber;
+            this.waitingForSecondOperand = true;
+            this.updateDisplay();
+        }
+    }
+}
+
+const calculator = new Calculator();
+
+document.querySelectorAll('.number-btn').forEach(button => {
+    button.addEventListener('click', () => {
+        calculator.inputDigit(button.textContent);
+    });
+});
+
+document.querySelectorAll('.operation-btn').forEach(button => {
+    button.addEventListener('click', () => {
+        calculator.inputOperator(button.textContent);
+    });
+});
+
+document.querySelector('.equals-btn').addEventListener('click', () => {
+    calculator.calculate();
+});
+
+document.querySelector('.clear-btn').addEventListener('click', () => {
+    calculator.clear();
+});
+
+document.querySelector('#dot').addEventListener('click', () => {
+    calculator.inputDecimal();
+});
+
+</script>
