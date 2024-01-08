@@ -11,19 +11,20 @@
         // Fillin all values with 0
         var Board = Array(10).fill().map(() => Array(10).fill(0));
 
+        mineCount = 10;
         // Generate X mines in random locations, we are using 5 for demo purposes
-        for (var i = 0; i < 5; i++) {
+        for (var i = 0; i < mineCount; i++) {
             var x = Math.floor(Math.random() * 10);
             var y = Math.floor(Math.random() * 10);
-            if (Board[x][y] == 10) {
+            if (Board[x][y] != 0) { // Check if the cell already has a mine
                 i--;
             } else {
-                Board[x][y] = 10;
+                Board[x][y] = 10; // Place a mine
                 for (var dx = -1; dx <= 1; dx++) {
                     for (var dy = -1; dy <= 1; dy++) {
                         if (x + dx >= 0 && x + dx < 10 && y + dy >= 0 && y + dy < 10) {
                             if (Board[x + dx][y + dy] != 10) {
-                                Board[x + dx][y + dy] += 1;
+                                Board[x + dx][y + dy] += 1; // Increment the number in the surrounding cell
                             }
                         }
                     }
@@ -31,39 +32,37 @@
             }
         }
 
-        // Remove normal right click menu
-        document.addEventListener('contextmenu', event => event.preventDefault());
-
-        function flag(x, y) {
-            // Do nothing
-            if (document.querySelector('[data-x="'+x+'"][data-y="'+y+'"]').classList.contains('revealed')) {
-                return;
+        // Function to check if the game is won
+        function checkWin() {
+            var win = true;
+            for (var i = 0; i < 10; i++) {
+                for (var j = 0; j < 10; j++) {
+                    if (!document.querySelector(`.cell[data-x="${i}"][data-y="${j}"]`).classList.contains('revealed') && Board[i][j] < mineCount) {
+                        win = false;
+                    }
+                }
             }
-
-            // Unflag
-            if (document.querySelector('[data-x="'+x+'"][data-y="'+y+'"]').classList.contains('flagged')) {
-                document.querySelector('[data-x="'+x+'"][data-y="'+y+'"]').classList.remove('flagged');
-                return;
+            if (win) {
+                alert('You win!');
             }
-
-            // Flag
-            document.querySelector('[data-x="'+x+'"][data-y="'+y+'"]').classList.add('flagged');
         }
-
 
 
         function cellReveal(x, y) {
             // if reaveled do nothing
             if (document.querySelector('[data-x="'+x+'"][data-y="'+y+'"]').classList.contains('revealed')) {
+                checkWin();
                 return;
             }
 
             if (Board[x][y] >= 10) {
                 alert('Game over!');
+                // reload page
+                location.reload();
                 return;
             }
 
-            document.querySelector('[data-x="'+x+'"][data-y="'+y+'"]').classList.add('revealed');
+            document.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`).classList.add('revealed');
 
             // reveal all cells around it if it is a 0
             if (Board[x][y] == 0) {
@@ -77,34 +76,31 @@
             }
         }
 
-            var html = '';
-            for (var i = 0; i < 10; i++) {
-                html += '<div>';
-                for (var j = 0; j < 10; j++) {
-                    var cellClass = '';
-                    if (Board[i][j] == 1) cellClass = 'one';
-                    else if (Board[i][j] == 2) cellClass = 'two';
-                    else if (Board[i][j] == 3) cellClass = 'three';
-                    else if (Board[i][j] >= 4) cellClass = 'four-or-more';
-                    html += '<div class="cell ' + cellClass + '" onclick="cellReveal('+i+','+j+')" data-x="'+i+'" data-y="'+j+'">'+Board[i][j]+'</div>';
-                }
-                html += '</div>';
+        var html = '';
+        for (var i = 0; i < 10; i++) {
+            html += '<div>';
+            for (var j = 0; j < 10; j++) {
+                var cellClass = '';
+                if (Board[i][j] == 1) cellClass = 'one';
+                else if (Board[i][j] == 2) cellClass = 'two';
+                else if (Board[i][j] == 3) cellClass = 'three';
+                else if (Board[i][j] >= 4) cellClass = 'four-or-more';
+                html += '<div class="cell unrevealed ' + cellClass + '" onclick="cellReveal('+i+','+j+')" data-x="'+i+'" data-y="'+j+'">'+Board[i][j]+'</div>';
             }
+            html += '</div>';
+        }
 
-        document.getElementById('board').innerHTML = html;
-        
-        // Add the flag function to the right click event
-        document.querySelectorAll('.cell').forEach(cell => cell.addEventListener('contextmenu', event => flag(event.target.dataset.x, event.target.dataset.y)));
-        // Add the reveal function to the left click event
-        document.querySelectorAll('.cell').forEach(cell => cell.addEventListener('click', event => cellReveal(event.target.dataset.x, event.target.dataset.y)));
-        
-        // Cover the unrevealed cells with a gray background
-        document.querySelectorAll('.cell').forEach(cell => cell.classList.add('unrevealed'));
-        // Remove the gray background from the revealed cells
-        document.querySelectorAll('.cell').forEach(cell => cell.addEventListener('click', event => event.target.classList.remove('unrevealed')));
+    document.getElementById('board').innerHTML = html;
 
-        // Add a reset button
-        document.getElementById('board').innerHTML += '<button onclick="location.reload()">Reset</button>';
+    // Add the flag function to the right click event
+    document.querySelectorAll('.cell').forEach(cell => cell.addEventListener('contextmenu', event => flag(event.target.dataset.x, event.target.dataset.y)));
+    // Add the reveal function to the left click event
+    document.querySelectorAll('.cell').forEach(cell => cell.addEventListener('click', event => cellReveal(event.target.dataset.x, event.target.dataset.y)));
+    // Remove the gray background from the revealed cells
+    document.querySelectorAll('.cell').forEach(cell => cell.addEventListener('click', event => event.target.classList.remove('unrevealed')));
+
+    // Add a reset button
+    document.getElementById('board').innerHTML += '<button onclick="location.reload()">Reset</button>';
 
 
     </script>
@@ -136,6 +132,7 @@
         line-height: 20px;
         cursor: pointer;
         border: 1px solid white;
+        position: relative
     }
     .mine {
         background: red;
@@ -158,4 +155,20 @@
     .four-or-more {
         color: red;
     }
+    .cell::before {
+    content: '';
+    background-color: lightgray;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    }
+
+    .cell.revealed::before {
+        content: none;
+    }
+
+
 </style>
