@@ -20,13 +20,14 @@
         mineCount = 10;
 
         for (var i = 0; i < mineCount; i++) {
-            // Gen mineX, mineY
             var mineX = Math.floor(Math.random() * 10);
             var mineY = Math.floor(Math.random() * 10);
-            if (Board[mineX][mineY] != 0) { // Check if the cell already has a mine
+	    // Check if the cell already has a mine
+            if (Board[mineX][mineY] != 0) { 
                 i--;
             } else {
-                Board[mineX][mineY] = 10; // Place a mine
+		// Place mine
+                Board[mineX][mineY] = 10;
                 // Add 1 to all cells adjacent to the mine
                 for (var x = -1; x <= 1; x++) {
                     for (var y = -1; y <= 1; y++) {
@@ -57,7 +58,7 @@
 
 
         function cellReveal(x, y) {
-            // Reveal, check win
+            // check for win upon revealing
             if (document.querySelector('[data-x="' + x + '"][data-y="' + y + '"]').classList.contains('revealed')) {
                 checkWin();
                 return;
